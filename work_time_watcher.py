@@ -7,12 +7,9 @@ import time
 
 # definitions:
 def create_json_file(path, file_name):
-    # times['session_day'] = session_day.timestamp()
     with open(path + file_name, 'w+') as created_file:
-        # json.dump(times, created_file)
         debugInfo('json file created')
-        function_test(today_file_is_created())
-        
+        function_test(today_file_is_created())     
         
 def update_json_file(path, file_name, element):
     with open(path + file_name, 'w') as created_file:
@@ -25,7 +22,16 @@ def read_json_file(path, file_name):
         times = json.load(readed_file)
         debugInfo('readed json file')
 
-existing_commands = ["help", "start", "stop", "exit", "work", "w", "break", "b", "status", "clear"]
+def show_json_file_content(path):
+    file_name = input("input file date in format: YYYY-MM-DD: ")
+    with open(path + file_name + '_worktime.json', 'r') as readed_file:
+        json_content = json.load(readed_file)
+        info("json file content: ", json_content)
+
+def data():
+    show_json_file_content(path_of_file)
+
+existing_commands = ["help", "start", "stop", "exit", "work", "w", "break", "b", "status", "clear", "data"]
 today_file_name = f'{date.today()}_worktime.json'
 path_of_file = 'worktime_jsons/'
 
@@ -80,7 +86,6 @@ def work():
                 current_work = times['works'][counting["work_id"]]
                 current_work['stop'] = datetime.now().timestamp()
                 current_work['total'] = current_work['stop'] - current_work['start']
-                # debugInfo(current_work)
                 print_work_time()
                 time.sleep(10)
 
@@ -93,12 +98,14 @@ def work():
 
             except KeyboardInterrupt:
                 info("waiting loop was stopped")
-                
                 update_json_file(path_of_file, today_file_name, times)
                 work_in_progress = False
+
         counting["work_id"] += 1
     else:
         error("first you need to use command 'start' to create today .json file")
+
+salary_per_minute = 7 / 60
 
 def print_work_time():
     total = 0
@@ -110,8 +117,10 @@ def print_work_time():
             error(work_value, 'has no argument "total"')
 
     t1 = datetime.fromtimestamp(total)
-    info("total worktime is:", f'{t1.hour-1} hours and {t1.minute} minutes')
+    salary = ((t1.hour - 1) * salary_per_minute * 60) + (salary_per_minute * t1.minute)
     print()
+    info("Today total worktime is:", f'{t1.hour-1} hours and {t1.minute} minutes')
+    info(f"You earned today: {round(salary, 2)} Eur")
 
 def w(): work()
 
