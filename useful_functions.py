@@ -1,7 +1,7 @@
 from colorama import init, Fore, Back, Style
 init(autoreset=True)
 
-show_debug_info = True
+show_debug_info = False
 def debugInfo(*args):
     if show_debug_info:    
         print(Fore.BLUE + Style.BRIGHT + 'debug info:', args)
@@ -17,6 +17,9 @@ def function_test(function):
         info(f'{function} passed')
     else:
         error(f"{function} not passed")
+
+def todo(*args):
+    print(Fore.LIGHTRED_EX + 'TODO this', args )
 
 # https://www.delftstack.com/howto/python/python-clear-console/
 import os

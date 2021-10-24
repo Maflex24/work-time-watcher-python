@@ -1,6 +1,6 @@
 # imports
 from datetime import datetime, time, date
-from useful_functions import debugInfo, info, error, function_test, clearConsole, clear
+from useful_functions import debugInfo, info, error, function_test, clearConsole, clear, todo
 from os.path import exists
 import json
 import time
@@ -9,7 +9,7 @@ import time
 def create_json_file(path, file_name):
     with open(path + file_name, 'w+') as created_file:
         debugInfo('json file created')
-        function_test(today_file_is_created())     
+        function_test(week_file_is_created())     
         
 def update_json_file(path, file_name, element):
     with open(path + file_name, 'w') as created_file:
@@ -29,7 +29,10 @@ def show_json_file_content(path):
         info("json file content: ", json_content)
 
 def data():
-    show_json_file_content(path_of_file)
+    try:
+        show_json_file_content(path_of_file)
+    except FileNotFoundError:
+        error("File was not found. Wrong name?")
 
 existing_commands = ["help", "start", "stop", "exit", "work", "w", "break", "b", "status", "clear", "data"]
 today_file_name = f'{date.today()}_worktime.json'
@@ -48,7 +51,7 @@ def execute_command(command):
     else:
         globals()[command]()
 
-def today_file_is_created():
+def week_file_is_created():
     is_file_created = exists(path_of_file + today_file_name)
     return is_file_created
 
@@ -56,7 +59,7 @@ def help():
     info("possible commands:", existing_commands)
 
 def start():
-    if not today_file_is_created():
+    if not week_file_is_created():
         create_json_file(path_of_file, today_file_name)
         times['today_date'] = str(date.today().year) + '-' + str(date.today().month) + '-' + str(date.today().day) 
         debugInfo(times["today_date"])
@@ -66,7 +69,7 @@ def start():
     
 
 def stop():
-    pass
+    todo("stop()")
     # TODO
 
 counting = {
@@ -75,7 +78,7 @@ counting = {
 }
 
 def work():
-    if today_file_is_created():
+    if week_file_is_created():
         times["works"].append({'start': datetime.now().timestamp()})
         update_json_file(path_of_file, today_file_name, times)
 
@@ -83,6 +86,7 @@ def work():
         refresh_loop_id = 0
         while work_in_progress:
             try:
+                clear()
                 current_work = times['works'][counting["work_id"]]
                 current_work['stop'] = datetime.now().timestamp()
                 current_work['total'] = current_work['stop'] - current_work['start']
@@ -97,6 +101,7 @@ def work():
                 refresh_loop_id += 1
 
             except KeyboardInterrupt:
+                clear()
                 info("waiting loop was stopped")
                 update_json_file(path_of_file, today_file_name, times)
                 work_in_progress = False
@@ -125,7 +130,7 @@ def print_work_time():
 def w(): work()
 
 def break_in_work():
-    if today_file_is_created():
+    if week_file_is_created():
         # TODO
         pass
     else:
@@ -151,7 +156,7 @@ times = {
 
 user_command = "not started"
 def main():
-    if today_file_is_created(): #FIXME if file is created, but it's empty, json have error
+    if week_file_is_created(): #FIXME if file is created, but it's empty, json have error
         read_json_file(path_of_file, today_file_name)
         counting["work_id"] = len(times["works"])
         counting["break_id"] = len(times["breaks"])
