@@ -17,6 +17,7 @@ file_name = f'week{week}_worktime.json'
 debugInfo("file_name", file_name)
 jsons_folder_path = 'worktime_jsons/'
 existing_commands = ["help", "start", "exit", "work", "clear", "week"]
+salary_per_hour = 7
 
 week_worktimes = {
     'week': week,
@@ -113,6 +114,18 @@ def update_work_data():
     work_session_data['stop'] = datetime.now().timestamp()
     work_session_data['total'] = work_session_data['stop'] - work_session_data['start']
 
+def print_salary(salary_per_hour, timestamp):
+    date = datetime.utcfromtimestamp(timestamp)
+
+    salary = (date.hour * salary_per_hour) + (salary_per_hour / 60 * date.minute)
+    info(f'You earned today: {round(salary, 2)} Eur')
+
+def return_salary(salary_per_hour, timestamp):
+    date = datetime.utcfromtimestamp(timestamp)
+
+    salary = (date.hour * salary_per_hour) + (salary_per_hour / 60 * date.minute)
+    return round(salary, 2)
+
 def print_work_stats(time_range):
     if time_range == 'today':
         clear()
@@ -122,6 +135,7 @@ def print_work_stats(time_range):
 
         total_date = datetime.utcfromtimestamp(total_time)
         info(f'You worked today:', f'{total_date.hour} hours and {total_date.minute} minutes')
+        print_salary(salary_per_hour, total_time)
 
     if time_range == 'week':
         clear()
@@ -137,7 +151,7 @@ def print_work_stats(time_range):
             debugInfo(f'total for day {days["weekday"]} ({days["weekday"] + 1}) is: {total_for_day}')
 
             date_day = datetime.utcfromtimestamp(total_for_day)
-            info(f"You worked {days['date']['day']}.{days['date']['month']}.{days['date']['year']} {date_day.hour} hours and {date_day.minute} minutes")
+            info(f"You worked {days['date']['day']}.{days['date']['month']}.{days['date']['year']} {date_day.hour} hours and {date_day.minute} minutes, earned: {return_salary(salary_per_hour, total_for_day)} EUR")
 
             week_total += total_for_day
             total_for_day = 0
@@ -148,6 +162,7 @@ def print_work_stats(time_range):
 
         print('')
         info(f"You worked this week: {week_work_time.hour} hours and {week_work_time.minute} minutes")
+        info(f'You earned this week: {return_salary(salary_per_hour, week_total)} EUR')
 
 def work_loop(meter):
     try:
