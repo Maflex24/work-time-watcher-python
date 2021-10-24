@@ -27,7 +27,7 @@ week_worktimes = {
 }
 
 # definitions
-def week_file_is_created():
+def json_file_is_created(file_name):
     is_file_created = exists(jsons_folder_path + file_name)
     return is_file_created
 
@@ -40,6 +40,11 @@ def fetch_json_data(path, file_name):
     with open(path + file_name, 'r') as readed_file:
         global week_worktimes
         week_worktimes = json.load(readed_file)
+        debugInfo('fetched json file')
+
+def fetch_json_data(path, file_name, dict_object):
+    with open(path + file_name, 'r') as readed_file:
+        dict_object = json.load(readed_file)
         debugInfo('fetched json file')
 
 def update_json_file(path, file_name, element):
@@ -88,7 +93,7 @@ def fill_week_data():
     debugInfo(week_worktimes)
 
 def start():
-    if not week_file_is_created():
+    if not json_file_is_created(file_name):
         create_json_file(jsons_folder_path, file_name)
         fill_week_data()
         update_json_file(jsons_folder_path, file_name, week_worktimes)
@@ -96,9 +101,18 @@ def start():
         print("Week file was created earlier")
 
 def week():
+    clear()
+    info(f"Type 'this' or leave empty to see actual week")
+    info(f"Type '-' to see previous week")
+    info(f"Type specyfic number to see statistics from this week")
+
     which_week = input("Which week you want to see?: ")
     if which_week == '':
         print_work_stats('week')
+    elif which_week == '-':
+        print_work_stats(datetime.now().isocalendar()[1] - 1)
+    else:
+        print_work_stats(which_week)
 
 def add_work_information(key):
     week_worktimes['work_days'][weekday]['works'].append(
@@ -139,8 +153,9 @@ def print_work_stats(time_range):
         info(f'You worked today:', f'{total_date.hour} hours and {total_date.minute} minutes')
         print_salary(salary_per_hour, total_time)
 
-    if time_range == 'week':
+    elif time_range == 'week' or time_range == 'this':
         clear()
+        info(f'Week {week_worktimes["week"]} statistics:')
         total_for_day = 0
         week_total = 0
 
@@ -166,6 +181,21 @@ def print_work_stats(time_range):
         info(f"You worked this week: {week_work_time.hour} hours and {week_work_time.minute} minutes")
         info(f'You earned this week: {return_salary(salary_per_hour, week_total)} EUR')
 
+    else:
+        clear()
+        file_name = f'week{time_range}_worktime.json'
+
+        if json_file_is_created(file_name):
+            info(f"Week {time_range} statistics")
+            
+            temp_dict = {}
+            fetch_json_data(jsons_folder_path, file_name, temp_dict)
+            info(temp_dict)
+
+        else:
+            error(f"Week {time_range} file does not exist!")
+        #TODO 
+
 def work_loop(meter):
     try:
         update_work_data()
@@ -183,7 +213,7 @@ def work_loop(meter):
             update_json_file(jsons_folder_path, file_name, week_worktimes)
 
 def work():
-    if week_file_is_created():
+    if json_file_is_created(file_name):
         add_work_information('start')
         update_json_file(jsons_folder_path, file_name, week_worktimes)
         work_loop(0)
@@ -194,7 +224,7 @@ def work():
 # main section
 user_command = 'not started'
 def main():
-    if week_file_is_created(): #FIXME if file is created, but it's empty, json have error
+    if json_file_is_created(file_name): #FIXME if file is created, but it's empty, json have error
         fetch_json_data(jsons_folder_path, file_name)
     
     global user_command
