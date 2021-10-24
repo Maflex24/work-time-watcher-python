@@ -18,6 +18,7 @@ debugInfo("file_name", file_name)
 jsons_folder_path = 'worktime_jsons/'
 existing_commands = ["help", "start", "exit", "work", "clear", "week"]
 salary_per_hour = 7
+temp_dict = {}
 
 week_worktimes = {
     'week': week,
@@ -42,9 +43,10 @@ def fetch_json_data(path, file_name):
         week_worktimes = json.load(readed_file)
         debugInfo('fetched json file')
 
-def fetch_json_data(path, file_name, dict_object):
+def fetch_json_specyfic_data(path, file_name):
     with open(path + file_name, 'r') as readed_file:
-        dict_object = json.load(readed_file)
+        global temp_dict
+        temp_dict = json.load(readed_file)
         debugInfo('fetched json file')
 
 def update_json_file(path, file_name, element):
@@ -142,6 +144,43 @@ def return_salary(salary_per_hour, timestamp):
     salary = (date.hour * salary_per_hour) + (salary_per_hour / 60 * date.minute)
     return round(salary, 2)
 
+def print_week_stats(week, dictionary):
+    clear()
+    global temp_dict
+    global week_worktimes
+    if dictionary == week_worktimes:
+        dictionary = week_worktimes
+    elif dictionary == temp_dict:
+        dictionary == temp_dict
+    
+
+    info(f'Week {dictionary["week"]} statistics:')
+    total_for_day = 0
+    week_total = 0
+
+    for days in dictionary['work_days']:
+        # days to cały dany dzień
+        for works in days['works']:
+            # works to już zapisy pracy w danym dniu
+            total_for_day += works['total']
+
+        debugInfo(f'total for day {days["weekday"]} ({days["weekday"] + 1}) is: {total_for_day}')
+
+        date_day = datetime.utcfromtimestamp(total_for_day)
+        info(f"You worked {days['date']['day']}.{days['date']['month']}.{days['date']['year']} {date_day.hour} hours and {date_day.minute} minutes, earned: {return_salary(salary_per_hour, total_for_day)} EUR")
+
+        week_total += total_for_day
+        total_for_day = 0
+
+    debugInfo("")
+    debugInfo('total for week is:', week_total)
+    week_work_time = datetime.utcfromtimestamp(week_total)
+
+    print('')
+    info(f"You worked this week: {week_work_time.hour} hours and {week_work_time.minute} minutes")
+    info(f'You earned this week: {return_salary(salary_per_hour, week_total)} EUR')
+
+
 def print_work_stats(time_range):
     if time_range == 'today':
         clear()
@@ -154,47 +193,19 @@ def print_work_stats(time_range):
         print_salary(salary_per_hour, total_time)
 
     elif time_range == 'week' or time_range == 'this':
-        clear()
-        info(f'Week {week_worktimes["week"]} statistics:')
-        total_for_day = 0
-        week_total = 0
-
-        for days in week_worktimes['work_days']:
-            # days to cały dany dzień
-            for works in days['works']:
-                # works to już zapisy pracy w danym dniu
-                total_for_day += works['total']
-
-            debugInfo(f'total for day {days["weekday"]} ({days["weekday"] + 1}) is: {total_for_day}')
-
-            date_day = datetime.utcfromtimestamp(total_for_day)
-            info(f"You worked {days['date']['day']}.{days['date']['month']}.{days['date']['year']} {date_day.hour} hours and {date_day.minute} minutes, earned: {return_salary(salary_per_hour, total_for_day)} EUR")
-
-            week_total += total_for_day
-            total_for_day = 0
-
-        debugInfo("")
-        debugInfo('total for week is:', week_total)
-        week_work_time = datetime.utcfromtimestamp(week_total)
-
-        print('')
-        info(f"You worked this week: {week_work_time.hour} hours and {week_work_time.minute} minutes")
-        info(f'You earned this week: {return_salary(salary_per_hour, week_total)} EUR')
-
+        print_week_stats(datetime.now().isocalendar()[1], week_worktimes)
+        
     else:
         clear()
         file_name = f'week{time_range}_worktime.json'
 
         if json_file_is_created(file_name):
-            info(f"Week {time_range} statistics")
-            
-            temp_dict = {}
-            fetch_json_data(jsons_folder_path, file_name, temp_dict)
-            info(temp_dict)
+            info(f"Week {time_range} statistics")       
+            fetch_json_specyfic_data(jsons_folder_path, file_name)
+            print_week_stats(time_range, temp_dict)
 
         else:
             error(f"Week {time_range} file does not exist!")
-        #TODO 
 
 def work_loop(meter):
     try:
