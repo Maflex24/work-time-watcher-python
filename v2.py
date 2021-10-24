@@ -34,7 +34,7 @@ def json_file_is_created(file_name):
 
 def create_json_file(path, file_name):
     with open(path + file_name, 'w+'):
-        # todo obsługa tworzenia katalogu, jeśli ten nie istnieje
+        # TODO obsługa tworzenia katalogu, jeśli ten nie istnieje
         debugInfo('json file was created')
 
 def fetch_json_data(path, file_name):
@@ -152,7 +152,7 @@ def print_week_stats(week, dictionary):
         dictionary = week_worktimes
     elif dictionary == temp_dict:
         dictionary == temp_dict
-    
+
 
     info(f'Week {dictionary["week"]} statistics:')
     total_for_day = 0
@@ -241,7 +241,7 @@ def main():
     global user_command
     while user_command != 'exit':
         print()
-        user_command = input("Write command, type 'help' if you don't know what to choose: ")
+        user_command = input("Write command, type 'help' if you don't know what to choose: ").strip()
         
         if is_command_valid(user_command) and user_command != 'exit':
                 execute_command(user_command)
