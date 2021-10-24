@@ -96,7 +96,9 @@ def start():
         print("Week file was created earlier")
 
 def week():
-    print_work_stats('week')
+    which_week = input("Which week you want to see?: ")
+    if which_week == '':
+        print_work_stats('week')
 
 def add_work_information(key):
     week_worktimes['work_days'][weekday]['works'].append(
